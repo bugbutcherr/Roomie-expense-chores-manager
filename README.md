@@ -1,7 +1,6 @@
 # Roomie
 
-Roomie is a comprehensive, single-page expense and chore management application designed to simplify shared living. Built entirely in a single HTML file, it offers an elegant and intuitive interface for managing shared expenses, tracking debts, assigning chores, and generating monthly settlement summaries.
-
+Something i built to get a hang of HTML and js
 ## Features
 
 * **Expense Splitting:** Easily log common expenses like rent, groceries, and utilities, and split them accurately among roommates.

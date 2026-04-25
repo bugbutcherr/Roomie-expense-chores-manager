@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roomie - Expense & Chore Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface-color: rgba(30, 41, 59, 0.7);
+            --surface-hover: rgba(30, 41, 59, 0.9);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #818cf8;
+            --accent-primary-hover: #6366f1;
+            --accent-success: #34d399;
+            --accent-danger: #fb7185;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(129, 140, 248, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(52, 211, 153, 0.15) 0px, transparent 50%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.4);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+            background: rgba(129, 140, 248, 0.1);
+        }
+
+        .content-area {
+            padding: 2rem;
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Forms & Inputs */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.875rem;
+            background-color: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        button:hover {
+            background-color: var(--accent-primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Lists & Cards */
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card {
+            background-color: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            background-color: var(--surface-hover);
+        }
+
+        .card-left h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-left p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .card-right {
+            text-align: right;
+        }
+
+        .amount {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .amount.positive { color: var(--accent-success); }
+        .amount.negative { color: var(--accent-danger); }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(129, 140, 248, 0.2);
+            color: var(--accent-primary);
+        }
+
+        /* Utilities */
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .text-center { text-align: center; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .upi-btn {
+            background: linear-gradient(to right, #2563eb, #3b82f6);
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .upi-btn:hover {
+            background: linear-gradient(to right, #1d4ed8, #2563eb);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Roomie</h1>
+            <p style="color: var(--text-secondary)">Expense Splitter & Roommate Manager</p>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+            <div class="tab" onclick="switchTab('expenses')">Expenses</div>
+            <div class="tab" onclick="switchTab('chores')">Chores</div>
+            <div class="tab" onclick="switchTab('settlements')">Settle Up</div>
+            <div class="tab" onclick="switchTab('roommates')">Roommates</div>
+        </div>
+
+        <div class="content-area">
+            <!-- DASHBOARD SECTION -->
+            <div id="dashboard" class="section active">
+                <div class="flex-between">
+                    <h2>Balances</h2>
+                    <span class="badge" id="total-expenses-badge">Total: ₹0</span>
+                </div>
+                <div id="balances-list" class="card-list">
+                    <!-- Balances injected here -->
+                </div>
+                
+                <h2 class="mt-4 mb-4">Recent Activity</h2>
+                <div id="recent-activity-list" class="card-list">
+                    <!-- Activity injected here -->
+                </div>
+            </div>
+
+            <!-- EXPENSES SECTION -->
+            <div id="expenses" class="section">
+                <div class="flex-between">
+                    <h2>Add Expense</h2>
+                </div>
+                <form id="expense-form" class="mb-4">
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="exp-desc" placeholder="e.g. Groceries, Electricity" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (₹)</label>
+                        <input type="number" id="exp-amount" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Paid By</label>
+                        <select id="exp-payer" required>
+                            <!-- Options injected here -->
+                        </select>
+                    </div>
+                    <button type="submit">Add Expense (Split Equally)</button>
+                </form>
+                
+                <h2 class="mt-4 mb-4">All Expenses</h2>
+                <div id="expenses-list" class="card-list">
+                    <!-- Expenses injected here -->
+                </div>
+            </div>
+
+            <!-- CHORES SECTION -->
+            <div id="chores" class="section">
+                <div class="flex-between">
+                    <h2>Assign Chore</h2>
+                </div>
+                <form id="chore-form" class="mb-4">
+                    <div class="form-group">
+                        <label>Task Description</label>
+                        <input type="text" id="chore-desc" placeholder="e.g. Clean the kitchen" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Assign To</label>
+                        <select id="chore-assignee" required>
+                            <!-- Options injected here -->
+                        </select>
+                    </div>
+                    <button type="submit">Add Chore</button>
+                </form>
+
+                <h2 class="mt-4 mb-4">Pending Chores</h2>
+                <div id="chores-list" class="card-list">
+                    <!-- Chores injected here -->
+                </div>
+            </div>
+
+            <!-- SETTLEMENTS SECTION -->
+            <div id="settlements" class="section">
+                <div class="flex-between">
+                    <h2>Who Owes Whom</h2>
+                </div>
+                <div id="settlements-list" class="card-list">
+                    <!-- Settlements injected here -->
+                </div>
+            </div>
+
+            <!-- ROOMMATES SECTION -->
+            <div id="roommates" class="section">
+                <div class="flex-between">
+                    <h2>Manage Roommates</h2>
+                </div>
+                <form id="roommate-form" class="mb-4">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="rm-name" placeholder="Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>UPI ID (Optional)</label>
+                        <input type="text" id="rm-upi" placeholder="e.g. username@upi">
+                    </div>
+                    <button type="submit">Add Roommate</button>
+                </form>
+
+                <h2 class="mt-4 mb-4">Current Roommates</h2>
+                <div id="roommates-list" class="card-list">
+                    <!-- Roommates injected here -->
+                </div>
+                
+                <button class="btn-secondary mt-4" onclick="clearData()">⚠️ Reset All Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let state = {
+            users: [],
+            expenses: [],
+            chores: []
+        };
+
+        // Load from LocalStorage
+        function loadState() {
+            const saved = localStorage.getItem('roomieState');
+            if (saved) {
+                state = JSON.parse(saved);
+            } else {
+                // Initial default state
+                state.users = [
+                    { id: 'u1', name: 'Alice', upi: 'alice@upi' },
+                    { id: 'u2', name: 'Bob', upi: 'bob@upi' }
+                ];
+                saveState();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('roomieState', JSON.stringify(state));
+            renderAll();
+        }
+
+        function clearData() {
+            if(confirm("Are you sure you want to delete all expenses, chores, and roommates?")) {
+                state = { users: [], expenses: [], chores: [] };
+                saveState();
+            }
+        }
+
+        // --- Core Logic ---
+        function generateId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        function getUserName(id) {
+            const user = state.users.find(u => u.id === id);
+            return user ? user.name : 'Unknown';
+        }
+        
+        function getUserUPI(id) {
+            const user = state.users.find(u => u.id === id);
+            return user ? user.upi : '';
+        }
+
+        // Calculate balances: positive means they are owed money, negative means they owe money.
+        function calculateBalances() {
+            let balances = {};
+            state.users.forEach(u => balances[u.id] = 0);
+
+            state.expenses.forEach(exp => {
+                const amount = parseFloat(exp.amount);
+                const splitCount = state.users.length;
+                if(splitCount === 0) return;
+                
+                const splitAmount = amount / splitCount;
+
+                state.users.forEach(u => {
+                    if (u.id === exp.payerId) {
+                        // Payer paid the full amount, but owes their share
+                        balances[u.id] += (amount - splitAmount);
+                    } else {
+                        // Others just owe their share
+                        balances[u.id] -= splitAmount;
+                    }
+                });
+            });
+            return balances;
+        }
+
+        // Calculate who owes whom specifically
+        function calculateSettlements() {
+            let balances = calculateBalances();
+            let debtors = []; // People who owe (negative balance)
+            let creditors = []; // People who are owed (positive balance)
+
+            for (const [id, bal] of Object.entries(balances)) {
+                if (bal < -0.01) debtors.push({ id, amount: Math.abs(bal) });
+                else if (bal > 0.01) creditors.push({ id, amount: bal });
+            }
+
+            debtors.sort((a,b) => b.amount - a.amount);
+            creditors.sort((a,b) => b.amount - a.amount);
+
+            let settlements = [];
+            let i = 0; // debtors index
+            let j = 0; // creditors index
+
+            while (i < debtors.length && j < creditors.length) {
+                let debtor = debtors[i];
+                let creditor = creditors[j];
+                
+                let min = Math.min(debtor.amount, creditor.amount);
+                
+                settlements.push({
+                    from: debtor.id,
+                    to: creditor.id,
+                    amount: min
+                });
+
+                debtor.amount -= min;
+                creditor.amount -= min;
+
+                if (Math.abs(debtor.amount) < 0.01) i++;
+                if (Math.abs(creditor.amount) < 0.01) j++;
+            }
+
+            return settlements;
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('expense-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(state.users.length === 0) {
+                alert("Please add roommates first!"); return;
+            }
+            const desc = document.getElementById('exp-desc').value;
+            const amount = document.getElementById('exp-amount').value;
+            const payerId = document.getElementById('exp-payer').value;
+
+            state.expenses.unshift({
+                id: generateId(),
+                description: desc,
+                amount: parseFloat(amount),
+                payerId: payerId,
+                date: new Date().toISOString()
+            });
+            
+            e.target.reset();
+            saveState();
+            switchTab('dashboard');
+        });
+
+        document.getElementById('chore-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(state.users.length === 0) {
+                alert("Please add roommates first!"); return;
+            }
+            const desc = document.getElementById('chore-desc').value;
+            const assigneeId = document.getElementById('chore-assignee').value;
+
+            state.chores.unshift({
+                id: generateId(),
+                description: desc,
+                assigneeId: assigneeId,
+                status: 'pending',
+                date: new Date().toISOString()
+            });
+            
+            e.target.reset();
+            saveState();
+        });
+
+        document.getElementById('roommate-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('rm-name').value;
+            const upi = document.getElementById('rm-upi').value;
+
+            state.users.push({
+                id: generateId(),
+                name: name,
+                upi: upi
+            });
+            
+            e.target.reset();
+            saveState();
+        });
+
+        function completeChore(id) {
+            const chore = state.chores.find(c => c.id === id);
+            if(chore) {
+                chore.status = 'completed';
+                saveState();
+            }
+        }
+
+        function deleteChore(id) {
+            state.chores = state.chores.filter(c => c.id !== id);
+            saveState();
+        }
+        
+        function deleteExpense(id) {
+            if(confirm("Delete this expense?")) {
+                state.expenses = state.expenses.filter(e => e.id !== id);
+                saveState();
+            }
+        }
+
+        function deleteRoommate(id) {
+            if(confirm("Delete this roommate? This will not remove their past expenses, which might break calculations.")) {
+                state.users = state.users.filter(u => u.id !== id);
+                saveState();
+            }
+        }
+
+        // --- UI Rendering ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            renderAll(); // Re-render to ensure data is fresh
+        }
+
+        function renderSelects() {
+            const payerSelect = document.getElementById('exp-payer');
+            const assigneeSelect = document.getElementById('chore-assignee');
+            
+            const optionsHtml = state.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+            
+            payerSelect.innerHTML = optionsHtml;
+            assigneeSelect.innerHTML = optionsHtml;
+        }
+
+        function renderDashboard() {
+            const balances = calculateBalances();
+            const list = document.getElementById('balances-list');
+            const activity = document.getElementById('recent-activity-list');
+            
+            // Total Expenses
+            const total = state.expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
+            document.getElementById('total-expenses-badge').textContent = `Total: ₹${total.toFixed(2)}`;
+
+            // Render Balances
+            if (state.users.length === 0) {
+                list.innerHTML = `<div class="empty-state">No roommates added yet.</div>`;
+            } else {
+                list.innerHTML = state.users.map(u => {
+                    const bal = balances[u.id];
+                    const isPositive = bal > 0.01;
+                    const isNegative = bal < -0.01;
+                    const classStr = isPositive ? 'positive' : (isNegative ? 'negative' : '');
+                    const prefix = isPositive ? '+' : '';
+                    const statusText = isPositive ? 'Gets back' : (isNegative ? 'Owes' : 'Settled');
+
+                    return `
+                        <div class="card">
+                            <div class="card-left">
+                                <h3>${u.name}</h3>
+                                <p>${statusText}</p>
+                            </div>
+                            <div class="card-right">
+                                <div class="amount ${classStr}">${prefix}₹${Math.abs(bal).toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Render Recent Activity (Expenses + Chores combined, top 5)
+            let activities = [
+                ...state.expenses.map(e => ({...e, type: 'expense'})),
+                ...state.chores.filter(c => c.status === 'completed').map(c => ({...c, type: 'chore'}))
+            ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+
+            if(activities.length === 0) {
+                activity.innerHTML = `<div class="empty-state">No recent activity.</div>`;
+            } else {
+                activity.innerHTML = activities.map(act => {
+                    if (act.type === 'expense') {
+                        return `
+                            <div class="card" style="padding: 1rem;">
+                                <div class="card-left">
+                                    <h3 style="font-size: 1rem;">${act.description}</h3>
+                                    <p>Paid by ${getUserName(act.payerId)}</p>
+                                </div>
+                                <div class="card-right">
+                                    <div class="amount" style="font-size: 1rem;">₹${act.amount.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div class="card" style="padding: 1rem;">
+                                <div class="card-left">
+                                    <h3 style="font-size: 1rem; color: var(--accent-success);">✓ ${act.description}</h3>
+                                    <p>Completed by ${getUserName(act.assigneeId)}</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }).join('');
+            }
+        }
+
+        function renderExpenses() {
+            const list = document.getElementById('expenses-list');
+            if(state.expenses.length === 0) {
+                list.innerHTML = `<div class="empty-state">No expenses yet.</div>`;
+                return;
+            }
+
+            list.innerHTML = state.expenses.map(exp => `
+                <div class="card">
+                    <div class="card-left">
+                        <h3>${exp.description}</h3>
+                        <p>Paid by ${getUserName(exp.payerId)} on ${new Date(exp.date).toLocaleDateString()}</p>
+                    </div>
+                    <div class="card-right">
+                        <div class="amount">₹${exp.amount.toFixed(2)}</div>
+                        <button class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; margin-top: 0.5rem;" onclick="deleteExpense('${exp.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderChores() {
+            const list = document.getElementById('chores-list');
+            const pendingChores = state.chores.filter(c => c.status === 'pending');
+            
+            if(pendingChores.length === 0) {
+                list.innerHTML = `<div class="empty-state">All caught up! No pending chores.</div>`;
+                return;
+            }
+
+            list.innerHTML = pendingChores.map(chore => `
+                <div class="card">
+                    <div class="card-left">
+                        <h3>${chore.description}</h3>
+                        <p>Assigned to: <span class="badge">${getUserName(chore.assigneeId)}</span></p>
+                    </div>
+                    <div class="card-right" style="display: flex; gap: 0.5rem;">
+                        <button style="padding: 0.5rem; background: var(--accent-success);" onclick="completeChore('${chore.id}')">✓ Done</button>
+                        <button class="btn-secondary" style="padding: 0.5rem;" onclick="deleteChore('${chore.id}')">✗</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderSettlements() {
+            const list = document.getElementById('settlements-list');
+            const settlements = calculateSettlements();
+
+            if(state.users.length === 0) {
+                 list.innerHTML = `<div class="empty-state">Add roommates to calculate settlements.</div>`;
+                 return;
+            }
+
+            if(settlements.length === 0) {
+                list.innerHTML = `<div class="empty-state">All settled up! Nobody owes anything.</div>`;
+                return;
+            }
+
+            list.innerHTML = settlements.map(settle => {
+                const fromName = getUserName(settle.from);
+                const toName = getUserName(settle.to);
+                const upiId = getUserUPI(settle.to);
+                
+                let upiHtml = '';
+                if(upiId) {
+                    // Generate UPI intent link
+                    const upiLink = `upi://pay?pa=${upiId}&pn=${toName}&am=${settle.amount.toFixed(2)}&cu=INR`;
+                    upiHtml = `<a href="${upiLink}" style="text-decoration: none;">
+                                 <button class="upi-btn">Pay via UPI</button>
+                               </a>`;
+                }
+
+                return `
+                <div class="card">
+                    <div class="card-left">
+                        <h3>${fromName} <span style="color: var(--text-secondary); font-weight: normal;">owes</span> ${toName}</h3>
+                        ${upiId ? `<p>UPI: ${upiId}</p>` : '<p>No UPI ID provided</p>'}
+                    </div>
+                    <div class="card-right">
+                        <div class="amount negative">₹${settle.amount.toFixed(2)}</div>
+                        ${upiHtml}
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function renderRoommates() {
+            const list = document.getElementById('roommates-list');
+            if(state.users.length === 0) {
+                list.innerHTML = `<div class="empty-state">No roommates added yet.</div>`;
+                return;
+            }
+
+            list.innerHTML = state.users.map(u => `
+                <div class="card">
+                    <div class="card-left">
+                        <h3>${u.name}</h3>
+                        <p>${u.upi ? 'UPI: ' + u.upi : 'No UPI'}</p>
+                    </div>
+                    <div class="card-right">
+                        <button class="btn-secondary" style="padding: 0.5rem;" onclick="deleteRoommate('${u.id}')">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAll() {
+            renderSelects();
+            renderDashboard();
+            renderExpenses();
+            renderChores();
+            renderSettlements();
+            renderRoommates();
+        }
+
+        // Initialize
+        loadState();
+
+    </script>
+</body>
+</html>
